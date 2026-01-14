@@ -1,2 +1,2 @@
 # Pixort
-Simple manual image search
+Simple, manual image search
