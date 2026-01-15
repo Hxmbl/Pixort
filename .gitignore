@@ -5,16 +5,19 @@ __pycache__/
 *.pyd
 *.pyc
 
+
 # Virtual environments
 .venv/
 env/
 venv/
 ENV/
 
+
 # Qt/PySide cache & build
 *.qrc.py
 *.qmlc
 *.rcc
+
 
 # VS Code / IDE stuff
 .vscode/
@@ -22,17 +25,21 @@ ENV/
 *.sublime-workspace
 *.sublime-project
 
+
 # OS files
 .DS_Store
 Thumbs.db
 
+
 # Logs
 *.log
+
 
 # Python packaging
 *.egg-info/
 dist/
 build/
+
 
 # Git LFS or large binaries (if you accidentally add)
 *.so
@@ -41,8 +48,10 @@ build/
 *.exe
 *.bin
 
+
 # More pycache
 app/__pycache__
 core/__pycache__
 ui/__pycache__
 utils/__pycache__
+
