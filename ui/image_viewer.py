@@ -1,19 +1,41 @@
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout
+from PySide6.QtWidgets import (
+    QWidget, QLabel, QVBoxLayout, QHBoxLayout
+)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
+
 
 class ImageViewer(QWidget):
     def __init__(self):
         super().__init__()
-
         self.setStyleSheet("background-color: black;")
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        root = QVBoxLayout(self)
+        root.setContentsMargins(24, 24, 24, 24)
 
-        self.label = QLabel()
-        self.label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.label)
+        # Image
+        self.label = QLabel(alignment=Qt.AlignCenter)
+        root.addWidget(self.label, stretch=1)
+
+        # Overlay bar
+        overlay = QHBoxLayout()
+        overlay.setSpacing(48)
+
+        left = QLabel("←  Delete\n🗑")
+        right = QLabel("Keep  →\n✔")
+
+        for lbl in (left, right):
+            lbl.setAlignment(Qt.AlignCenter)
+            lbl.setStyleSheet("""
+                color: #aaa;
+                font-size: 18px;
+            """)
+
+        overlay.addWidget(left, alignment=Qt.AlignLeft)
+        overlay.addStretch()
+        overlay.addWidget(right, alignment=Qt.AlignRight)
+
+        root.addLayout(overlay)
 
         self._pixmap: QPixmap | None = None
 
@@ -35,4 +57,3 @@ class ImageViewer(QWidget):
             Qt.SmoothTransformation
         )
         self.label.setPixmap(scaled)
-

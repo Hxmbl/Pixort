@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QMainWindow, QStackedWidget
 from PySide6.QtCore import QTimer, Qt
 
 from core.loader import load_images
@@ -13,26 +13,27 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Image Sorter")
 
-        # Load images + state
         self.image_paths = load_images(image_folder)
         self.state = ReviewState(self.image_paths)
 
-        # Grid view
+        # Views
         self.grid = ImageGridView(self.image_paths)
+        self.viewer = ImageViewer()
 
-        # CONNECT SIGNAL
+        # Stack
+        self.stack = QStackedWidget()
+        self.stack.addWidget(self.grid)    # index 0
+        self.stack.addWidget(self.viewer)  # index 1
+        self.setCentralWidget(self.stack)
+
         self.grid.startReviewRequested.connect(self.start_review)
 
-        self.setCentralWidget(self.grid)
-
-        # Scroll after layout
         QTimer.singleShot(0, self.grid.scroll_to_bottom_right)
 
     # ---------- REVIEW MODE ----------
 
     def start_review(self):
-        self.viewer = ImageViewer()
-        self.setCentralWidget(self.viewer)
+        self.stack.setCurrentWidget(self.viewer)
         self.showFullScreen()
         self.show_current_image()
 
@@ -45,7 +46,7 @@ class MainWindow(QMainWindow):
         self.viewer.show_image(path)
 
     def keyPressEvent(self, event):
-        if not hasattr(self, "viewer"):
+        if self.stack.currentWidget() is not self.viewer:
             return
 
         if event.key() == Qt.Key_Right:
@@ -58,5 +59,5 @@ class MainWindow(QMainWindow):
 
     def end_review(self):
         self.showNormal()
-        self.setCentralWidget(self.grid)
+        self.stack.setCurrentWidget(self.grid)
         self.grid.update_overlays(self.state)
