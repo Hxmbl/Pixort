@@ -2,7 +2,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
 
-from app.window import MainWindow
+from app.window import MainWindow #Error!
 
 
 def select_image_folder() -> str | None:

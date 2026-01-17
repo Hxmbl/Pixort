@@ -1,46 +1,62 @@
 from PySide6.QtWidgets import QMainWindow
+from PySide6.QtCore import QTimer, Qt
+
 from core.loader import load_images
+from core.state import ReviewState
 from ui.grid_view import ImageGridView
-from PySide6.QtCore import QTimer
-from ui.viewer import ImageViewer
+from ui.image_viewer import ImageViewer
+
 
 class MainWindow(QMainWindow):
     def __init__(self, image_folder: str):
         super().__init__()
-        self.image_folder = image_folder
+
         self.setWindowTitle("Image Sorter")
 
+        # Load images + state
         self.image_paths = load_images(image_folder)
+        self.state = ReviewState(self.image_paths)
+
+        # Grid view
         self.grid = ImageGridView(self.image_paths)
+
+        # CONNECT SIGNAL
+        self.grid.startReviewRequested.connect(self.start_review)
+
         self.setCentralWidget(self.grid)
 
-        # Let Qt finish layout, then scroll
-        QTimer.singleShot(50, self.grid.scroll_to_bottom_right)
+        # Scroll after layout
+        QTimer.singleShot(0, self.grid.scroll_to_bottom_right)
 
-    def start_sorting(self):
-        self.current_index = 0
-        self.show_next_image()
+    # ---------- REVIEW MODE ----------
 
-    def show_next_image(self):
-        if self.current_index >= len(self.image_paths):
-            self.show_grid_results()
+    def start_review(self):
+        self.viewer = ImageViewer()
+        self.setCentralWidget(self.viewer)
+        self.showFullScreen()
+        self.show_current_image()
+
+    def show_current_image(self):
+        path = self.state.current()
+        if path is None:
+            self.end_review()
             return
 
-        image_path = self.image_paths[self.current_index]
+        self.viewer.show_image(path)
 
-        self.viewer = ImageViewer(
-            image_path=image_path,
-            keep_callback=self.keep_image,
-            delete_callback=self.delete_image
-        )
-        self.setCentralWidget(self.viewer)
+    def keyPressEvent(self, event):
+        if not hasattr(self, "viewer"):
+            return
 
-    def keep_image(self):
-        self.current_index += 1
-        self.show_next_image()
+        if event.key() == Qt.Key_Right:
+            self.state.keep()
+            self.show_current_image()
 
-    def delete_image(self):
-        # mark image for deletion
-        self.image_paths[self.current_index] = None
-        self.current_index += 1
-        self.show_next_image()
+        elif event.key() == Qt.Key_Left:
+            self.state.delete()
+            self.show_current_image()
+
+    def end_review(self):
+        self.showNormal()
+        self.setCentralWidget(self.grid)
+        self.grid.update_overlays(self.state)
